@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install *)",
+      "Bash(pnpm exec *)",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(nvm list *)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/limjuhyeok/.nvm/versions/node/**)",
+      "Bash(~/.nvm/versions/node/v20.18.3/bin/node ~/.nvm/versions/node/v20.18.3/bin/pnpm dev)",
+      "Bash(~/.nvm/versions/node/v22.14.0/bin/node ~/.nvm/versions/node/v22.14.0/bin/pnpm dev)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s http://localhost:3000/api/check)",
+      "Bash(curl -s -o /dev/null http://localhost:3000)",
+      "Bash(npm run *)",
+      "WebSearch",
+      "WebFetch(domain:www.viksnewsletter.com)",
+      "WebFetch(domain:news.skhynix.co.kr)",
+      "WebFetch(domain:www.tomshardware.com)",
+      "WebFetch(domain:tech-insider.org)",
+      "WebFetch(domain:www.aicerts.ai)",
+      "WebFetch(domain:introl.com)"
+    ]
+  }
+}
