@@ -433,6 +433,7 @@ export function DimensionMap({ centerKeyword, onNavigate }: DimensionMapProps) {
             {/* 채팅 패널 */}
             <ChatPanel
               highlightNodeId={(id) => setHoveredId(id)}
+              keywordId={centerKeyword.id}
             />
           </motion.div>
         )}
@@ -733,19 +734,53 @@ interface ChatMessage {
   time?: string
 }
 
-const SAMPLE_RESPONSE: ChatMessage = {
-  id: 'ai-1', role: 'ai',
-  text: '이 맵에서 핵심은 PoC 실패(n4)가 기술 문제가 아니라는 점입니다. 세 가지 구조적 원인 — 데이터 비구조화(n1), 보안 장벽(n2), 오류율 격차(n3) — 이 동시에 작동하고 있어요. 특히 n7(파이프라인 스타트업 시장)이 이 구조에서 생겨나는 새로운 기회입니다. 어떤 노드를 더 깊이 탐구하고 싶으신가요?',
-  nodeRefs: ['n4', 'n1', 'n7'],
+interface ChatConfig {
+  suggestedPrompts: string[]
+  sampleResponse: Omit<ChatMessage, 'id' | 'time'>
 }
 
-const SUGGESTED_PROMPTS = [
-  '이 맵에서 가장 중요한 노드는 어디인가?',
-  '투자자 관점에서 기회가 보이는 지점은?',
-  'AI PoC 실패율을 낮추려면 뭘 먼저 해야 하나?',
-]
+const CHAT_CONFIGS: Record<string, ChatConfig> = {
+  kw121: {
+    suggestedPrompts: [
+      '이 맵에서 가장 중요한 노드는 어디인가?',
+      'AI PoC 실패율을 낮추려면 뭘 먼저 해야 하나?',
+      '데이터 파이프라인 스타트업 기회를 어떻게 봐야 하나?',
+    ],
+    sampleResponse: {
+      role: 'ai',
+      text: '이 맵에서 핵심은 PoC 실패(n4)가 기술 문제가 아니라는 점입니다. 세 가지 구조적 원인 — 데이터 비구조화(n1), 보안 장벽(n2), 오류율 격차(n3) — 이 동시에 작동하고 있어요. 특히 n7(파이프라인 스타트업 시장)이 이 구조에서 생겨나는 새로운 기회입니다. 어떤 노드를 더 깊이 탐구하고 싶으신가요?',
+      nodeRefs: ['n4', 'n1', 'n7'],
+    },
+  },
+  kw120: {
+    suggestedPrompts: [
+      'HBM 병목이 우리 사업에 직접 영향을 주는 경로는?',
+      'SK하이닉스가 삼성을 이긴 결정적 이유는 뭔가?',
+      '중국 AI 굴기가 HBM 수출 통제로 정말 막히는가?',
+    ],
+    sampleResponse: {
+      role: 'ai',
+      text: '이 맵의 핵심은 n4(HBM 병목)가 단순한 반도체 부족 문제가 아니라는 점입니다. 물리적 공정 한계(rn2)와 AI 수요 폭발(rn1)이 동시에 작동하며, 여기에 지정학 규제(n3)가 추가됐습니다. 특히 n5(SK하이닉스 62% 독점)에서 n8(영업이익 47조)로 이어지는 인과가 이 맵의 핵심 인사이트입니다. 어떤 노드를 더 깊이 탐구하고 싶으신가요?',
+      nodeRefs: ['n4', 'rn2', 'n5', 'n8'],
+    },
+  },
+}
 
-function ChatPanel({ highlightNodeId }: { highlightNodeId: (id: string) => void }) {
+const DEFAULT_CHAT_CONFIG: ChatConfig = {
+  suggestedPrompts: [
+    '이 맵에서 가장 중요한 노드는 어디인가?',
+    '투자자 관점에서 기회가 보이는 지점은?',
+    '이 신호가 우리 사업에 미치는 영향은?',
+  ],
+  sampleResponse: {
+    role: 'ai',
+    text: '이 인과 맵에서 핵심 노드들의 연결 구조를 분석했습니다. 각 노드 간의 인과관계를 따라가면 이 신호의 본질적인 메커니즘이 드러납니다. 어떤 노드나 연결을 더 깊이 탐구하고 싶으신가요?',
+    nodeRefs: [],
+  },
+}
+
+function ChatPanel({ highlightNodeId, keywordId }: { highlightNodeId: (id: string) => void; keywordId: string }) {
+  const config = CHAT_CONFIGS[keywordId] ?? DEFAULT_CHAT_CONFIG
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -765,7 +800,7 @@ function ChatPanel({ highlightNodeId }: { highlightNodeId: (id: string) => void 
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
     setTimeout(() => {
-      setMessages(prev => [...prev, { ...SAMPLE_RESPONSE, id: `ai-${Date.now()}`, time: now }])
+      setMessages(prev => [...prev, { ...config.sampleResponse, id: `ai-${Date.now()}`, time: now }])
       setLoading(false)
     }, 900)
   }
@@ -804,7 +839,7 @@ function ChatPanel({ highlightNodeId }: { highlightNodeId: (id: string) => void 
               이 맵의 인과관계를 바탕으로 자유롭게 질문하거나 탐구해보세요.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {SUGGESTED_PROMPTS.map((q, i) => (
+              {config.suggestedPrompts.map((q, i) => (
                 <button key={i} onClick={() => { setInput(q); textareaRef.current?.focus() }}
                   style={{
                     textAlign: 'left', cursor: 'pointer',
